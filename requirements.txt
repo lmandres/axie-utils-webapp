@@ -1,0 +1,2 @@
+axie-utils==1.0.3
+Flask==2.0.2

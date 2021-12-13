@@ -1,0 +1,144 @@
+<html>
+<head>
+<title>Axie Utilities WebApp</title>
+<script type="application/javascript">
+
+function displayOverview() {
+    let divDispElem = document.getElementById("displayScreen");
+    divDispElem.innerHTML = "<h2>Overview Information</h2>";
+}
+
+function displayScholarForm() {
+    let divDispElem = document.getElementById("displayScreen");
+    divDispElem.innerHTML += `
+<h2>Add New Team</h2>
+Discord Name: <input type="text" id="discordName"><br />
+Scholar Name: <input type="text" id="scholarName"><br />
+Scholar Address: <input type="text" id="scholarAddress"><br />
+Scholar Payout Address: <input type="text" id="scholarPayoutAddress"><br />
+Scholar Percent: <input type="text" id="scholarPercent"><br />
+Scholar Payout: <input type="text" id="scholarPayout"><br />
+Scholar Private Key: <input type="password" id="scholarPrivateKey"><br />
+<button onclick="buildScholarAndPost();">Submit New Scholar</button>
+`;
+}
+
+function buildScholarAndPost() {
+
+    let discordNameElem = document.getElementById("discordName");
+    let scholarNameElem = document.getElementById("scholarName");
+    let scholarAddressElem = document.getElementById("scholarAddress");
+    let scholarPayoutAddressElem = document.getElementById("scholarPayoutAddress");
+    let scholarPercentElem = document.getElementById("scholarPercent");
+    let scholarPayoutElem = document.getElementById("scholarPayout");
+    let scholarPrivateKeyElem = document.getElementById("scholarPrivateKey");
+
+    data = {
+        "scholarID": null,
+        "discordName": discordNameElem.value,
+        "scholarName": scholarNameElem.value,
+        "scholarAddress": scholarAddressElem.value,
+        "scholarPayoutAddress": scholarPayoutAddressElem.value,
+        "scholarPercent": scholarPercentElem.value,
+        "scholarPayout": scholarPayoutElem.value,
+        "scholarPrivateKey": scholarPrivateKeyElem.value
+    }
+
+    postData(data);
+}
+
+function buildScholarTableBak(responseText) {
+
+        let divDispElem = document.getElementById("displayScreen");
+        divDispElem.innerHTML = "<h2>Axie Teams</h2><table>";
+
+        const data = JSON.parse(responseText);
+        for (let i=0; i < data.length; i++) {
+            divDispElem.innerHTML += "<tr>";
+            divDispElem.innerHTML += "<td>" + data[i]["discordName"] + "</td>";
+            divDispElem.innerHTML += "<td>" + data[i]["scholarName"] + "</td>";
+            divDispElem.innerHTML += "<td>" + data[i]["scholarAddress"] + "</td>";
+            divDispElem.innerHTML += "<td>" + data[i]["scholarPayoutAddress"] + "</td>";
+            divDispElem.innerHTML += "<td>" + data[i]["scholarPercent"] + "</td>";
+            divDispElem.innerHTML += "<td>" + data[i]["scholarPayout"] + "</td>";
+            divDispElem.innerHTML += "<td>????</td>";
+            divDispElem.innerHTML += "</tr>";
+            console.log(divDispElem.innerHTML);
+        }
+        
+        divDispElem.innerHTML += "</table>";
+        displayScholarForm();
+}
+
+function buildScholarTable(responseText) {
+
+        let divDispElem = document.getElementById("displayScreen");
+        divDispElem.innerHTML = "<h2>Axie Teams</h2><table>";
+
+
+        console.log(responseText);
+
+        const data = JSON.parse(responseText);
+        for (let i=0; i < data.length; i++) {
+            divDispElem.innerHTML += JSON.stringify(data[i]);
+        }
+        
+        divDispElem.innerHTML += "</table>";
+        displayScholarForm();
+}
+
+function displayPayouts() {
+    let divDispElem = document.getElementById("displayScreen");
+    divDispElem.innerHTML = "<h2>Payout Information</h2>";
+}
+
+function displayScholars() {
+    let xhr = new XMLHttpRequest();
+    let url = "http://127.0.0.1:8888/api/get_scholars";
+    xhr.open("GET", url);
+    xhr.onload = function() {
+        buildScholarTable(xhr.responseText);
+    };
+    xhr.send();
+}
+
+function shutdownServer() {
+    let xhr = new XMLHttpRequest();
+    let url = "http://127.0.0.1:8888/api/shutdown_server";
+    xhr.open("GET", url);
+    xhr.send();
+
+    let divDispElem = document.getElementById("displayScreen");
+    divDispElem.innerHTML = "<h2>You may now close your web browser or tab.</h2>";
+}
+
+function postData(data) {
+    let xhr = new XMLHttpRequest();
+    let url = "http://127.0.0.1:8888/api/update_scholars";
+    xhr.open("POST", url, true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.onload = function() {
+        buildScholarTable(xhr.responseText);
+    };
+    xhr.send(JSON.stringify(data));
+}
+
+</script>
+</head>
+<body>
+<h1>Axie Utilities WebApp</h1>
+<table>
+  <tr>
+    <td>
+      <button onclick="displayOverview();">Overview</button><br />
+      <button onclick="displayScholars();">Teams</button><br />
+      <button onclick="displayPayouts();">Payouts</button><br />
+      <button onclick="shutdownServer();">Shutdown Server</button><br />
+    </td>
+    <td>
+      <div id="displayScreen" />
+    </td>
+  </tr>
+</table>
+</body>
+</html>
