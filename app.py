@@ -18,11 +18,22 @@ def getScholars():
     global dbreader
     return flask.jsonify(dbreader.getScholars())
 
+@app.route("/api/get_scholar_by_discord_name/<discordName>")
+def getScholarByDiscordName(discordName=None):
+    global dbreader
+    return flask.jsonify(dbreader.getScholarByDiscordName(discordName))
+
 @app.route("/api/update_scholars", methods=["POST"])
 def updateScholars():
     global dbreader
     updateVal = [flask.request.get_json()]
     dbreader.updateScholars(updateVal)
+    return flask.jsonify(dbreader.getScholars())
+
+@app.route("/api/delete_scholar_by_id/<scholarID>")
+def deleteScholarByID(scholarID=None):
+    global dbreader
+    dbreader.deleteScholars([{"scholarID": scholarID}])
     return flask.jsonify(dbreader.getScholars())
 
 @app.route("/api/shutdown_server")
@@ -32,7 +43,7 @@ def shutdownServer():
         raise RuntimeError('Not running with the Werkzeug Server')
     func()
     return "Server Shutdown!"
-        
+
 
 if __name__ == "__main__":
 

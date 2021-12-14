@@ -130,6 +130,7 @@ class DatabaseReader(object):
             """
                 SELECT
                     scholarID,
+                    discordName,
                     scholarName,
                     scholarAddress,
                     scholarPayoutAddress,

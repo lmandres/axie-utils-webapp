@@ -5,26 +5,34 @@
 
 function displayOverview() {
     let divDispElem = document.getElementById("displayScreen");
+    let divEntryElem = document.getElementById("entryScreen");
+
     divDispElem.innerHTML = "<h2>Overview Information</h2>";
+    divEntryElem.innerHTML = "";
 }
 
-function displayScholarForm() {
-    let divDispElem = document.getElementById("displayScreen");
-    divDispElem.innerHTML += `
+function displayScholarForm(scholarData) {
+
+    let divEntryElem = document.getElementById("entryScreen");
+    let screenHTML = `
 <h2>Add New Team</h2>
-Discord Name: <input type="text" id="discordName"><br />
-Scholar Name: <input type="text" id="scholarName"><br />
-Scholar Address: <input type="text" id="scholarAddress"><br />
-Scholar Payout Address: <input type="text" id="scholarPayoutAddress"><br />
-Scholar Percent: <input type="text" id="scholarPercent"><br />
-Scholar Payout: <input type="text" id="scholarPayout"><br />
-Scholar Private Key: <input type="password" id="scholarPrivateKey"><br />
+<input type="hidden" id="scholarID" value="` + scholarData["scholarID"] + `">
+Discord Name: <input type="text" id="discordName" value="` + scholarData["discordName"] + `"><br />
+Scholar Name: <input type="text" id="scholarName" value="` + scholarData["scholarName"] + `"><br />
+Scholar Address: <input type="text" id="scholarAddress" value="` + scholarData["scholarAddress"] + `"><br />
+Scholar Payout Address: <input type="text" id="scholarPayoutAddress" value="` + scholarData["scholarPayoutAddress"] + `"><br />
+Scholar Percent: <input type="text" id="scholarPercent" value="` + scholarData["scholarPercent"] + `"><br />
+Scholar Payout: <input type="text" id="scholarPayout" value="` + scholarData["scholarPayout"] + `"><br />
+Scholar Private Key: <input type="password" id="scholarPrivateKey" value="` + scholarData["scholarPrivateKey"] + `"><br />
 <button onclick="buildScholarAndPost();">Submit New Scholar</button>
 `;
+
+     divEntryElem.innerHTML = screenHTML;
 }
 
 function buildScholarAndPost() {
 
+    let scholarIDElem = document.getElementById("scholarID");
     let discordNameElem = document.getElementById("discordName");
     let scholarNameElem = document.getElementById("scholarName");
     let scholarAddressElem = document.getElementById("scholarAddress");
@@ -34,7 +42,7 @@ function buildScholarAndPost() {
     let scholarPrivateKeyElem = document.getElementById("scholarPrivateKey");
 
     data = {
-        "scholarID": null,
+        "scholarID": scholarIDElem.value,
         "discordName": discordNameElem.value,
         "scholarName": scholarNameElem.value,
         "scholarAddress": scholarAddressElem.value,
@@ -47,57 +55,89 @@ function buildScholarAndPost() {
     postData(data);
 }
 
-function buildScholarTableBak(responseText) {
+function buildScholarTable(responseText, scholarData) {
 
-        let divDispElem = document.getElementById("displayScreen");
-        divDispElem.innerHTML = "<h2>Axie Teams</h2><table>";
+    let divDispElem = document.getElementById("displayScreen");
+    let screenHTML = "<h2>Axie Teams</h2><table border=1>";
 
-        const data = JSON.parse(responseText);
-        for (let i=0; i < data.length; i++) {
-            divDispElem.innerHTML += "<tr>";
-            divDispElem.innerHTML += "<td>" + data[i]["discordName"] + "</td>";
-            divDispElem.innerHTML += "<td>" + data[i]["scholarName"] + "</td>";
-            divDispElem.innerHTML += "<td>" + data[i]["scholarAddress"] + "</td>";
-            divDispElem.innerHTML += "<td>" + data[i]["scholarPayoutAddress"] + "</td>";
-            divDispElem.innerHTML += "<td>" + data[i]["scholarPercent"] + "</td>";
-            divDispElem.innerHTML += "<td>" + data[i]["scholarPayout"] + "</td>";
-            divDispElem.innerHTML += "<td>????</td>";
-            divDispElem.innerHTML += "</tr>";
-            console.log(divDispElem.innerHTML);
-        }
+    const data = JSON.parse(responseText);
+    for (let i=0; i < data.length; i++) {
+        screenHTML += "<tr>";
+        screenHTML += "<td>" + data[i]["discordName"] + "</td>";
+        screenHTML += "<td>" + data[i]["scholarName"] + "</td>";
+        screenHTML += "<td>" + data[i]["scholarAddress"] + "</td>";
+        screenHTML += "<td>" + data[i]["scholarPayoutAddress"] + "</td>";
+        screenHTML += "<td>" + data[i]["scholarPercent"] + "</td>";
+        screenHTML += "<td>" + data[i]["scholarPayout"] + "</td>";
+        screenHTML += "<td>????</td>";
+        screenHTML += "<td><button onclick=\"displayScholarFormForDiscordName(\'" + data[i]["discordName"] + "\')\">Edit</button></td>";
+        screenHTML += "<td><button onclick=\"deleteScholarByID(" + data[i]["scholarID"] + ")\">Delete</button></td></td>";
+        screenHTML += "</tr>";
+    }
         
-        divDispElem.innerHTML += "</table>";
-        displayScholarForm();
-}
-
-function buildScholarTable(responseText) {
-
-        let divDispElem = document.getElementById("displayScreen");
-        divDispElem.innerHTML = "<h2>Axie Teams</h2><table>";
-
-
-        console.log(responseText);
-
-        const data = JSON.parse(responseText);
-        for (let i=0; i < data.length; i++) {
-            divDispElem.innerHTML += JSON.stringify(data[i]);
-        }
-        
-        divDispElem.innerHTML += "</table>";
-        displayScholarForm();
+    screenHTML += "</table>";
+    divDispElem.innerHTML = screenHTML;
 }
 
 function displayPayouts() {
     let divDispElem = document.getElementById("displayScreen");
+    let divEntryElem = document.getElementById("entryScreen");
+
     divDispElem.innerHTML = "<h2>Payout Information</h2>";
+    divEntryElem.innerHTML = "";
 }
 
 function displayScholars() {
     let xhr = new XMLHttpRequest();
     let url = "http://127.0.0.1:8888/api/get_scholars";
-    xhr.open("GET", url);
+    xhr.open("GET", url, true);
     xhr.onload = function() {
         buildScholarTable(xhr.responseText);
+        displayScholarForm(
+            {
+                "scholarID": null,
+                "discordName": "",
+                "scholarName": "",
+                "scholarAddress": "",
+                "scholarPayoutAddress": "",
+                "scholarPercent": "",
+                "scholarPayout": "",
+                "scholarPrivateKey": ""
+            }
+        );
+    };
+    xhr.send();
+}
+
+function displayScholarFormForDiscordName(discordName) {
+    let xhr = new XMLHttpRequest();
+    let url = "http://127.0.0.1:8888/api/get_scholar_by_discord_name/" +  encodeURIComponent(discordName);
+    xhr.open("GET", url, true);
+    xhr.onload = function() {
+        const data = JSON.parse(xhr.responseText);
+        displayScholarForm(data[0]);
+    };
+    xhr.send();
+}
+
+function deleteScholarByID(scholarID) {
+    let xhr = new XMLHttpRequest();
+    let url = "http://127.0.0.1:8888/api/delete_scholar_by_id/" +  scholarID;
+    xhr.open("GET", url, true);
+    xhr.onload = function() {
+        buildScholarTable(xhr.responseText);
+        displayScholarForm(
+            {
+                "scholarID": null,
+                "discordName": "",
+                "scholarName": "",
+                "scholarAddress": "",
+                "scholarPayoutAddress": "",
+                "scholarPercent": "",
+                "scholarPayout": "",
+                "scholarPrivateKey": ""
+            }
+        );
     };
     xhr.send();
 }
@@ -109,7 +149,10 @@ function shutdownServer() {
     xhr.send();
 
     let divDispElem = document.getElementById("displayScreen");
+    let divEntryElem = document.getElementById("entryScreen");
+
     divDispElem.innerHTML = "<h2>You may now close your web browser or tab.</h2>";
+    divEntryElem.innerHTML = "";
 }
 
 function postData(data) {
@@ -119,6 +162,18 @@ function postData(data) {
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.onload = function() {
         buildScholarTable(xhr.responseText);
+        displayScholarForm(
+            {
+                "scholarID": null,
+                "discordName": "",
+                "scholarName": "",
+                "scholarAddress": "",
+                "scholarPayoutAddress": "",
+                "scholarPercent": "",
+                "scholarPayout": "",
+                "scholarPrivateKey": ""
+            }
+        );
     };
     xhr.send(JSON.stringify(data));
 }
@@ -136,7 +191,8 @@ function postData(data) {
       <button onclick="shutdownServer();">Shutdown Server</button><br />
     </td>
     <td>
-      <div id="displayScreen" />
+      <div id="displayScreen"></div>
+      <div id="entryScreen"></div>
     </td>
   </tr>
 </table>
